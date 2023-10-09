@@ -1,4 +1,7 @@
 <?php
+
+use yii\web\JsonParser;
+
 $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-local.php',
@@ -14,8 +17,13 @@ return [
     'modules' => [],
     'components' => [
         'request' => [
-            'csrfParam' => '_csrf-backend',
+            'parsers' => [
+                'application/json' => JsonParser::class,
+            ]
         ],
+//        'response' => [
+//            'format' => \yii\web\Response::FORMAT_JSON
+//        ],
         'user' => [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => true,
@@ -39,7 +47,7 @@ return [
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
-//            'showScriptName' => false,
+            'showScriptName' => false,
             'rules' => [
             ],
         ],
