@@ -3,7 +3,10 @@
 namespace backend\models\search;
 
 
+use backend\enums\UserRoleEnum;
 use backend\models\Request;
+use common\models\User;
+use Yii;
 use yii\data\ActiveDataProvider;
 use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
@@ -51,9 +54,24 @@ class RequestSearch extends Request
      */
     public function addFieldsFilter(ActiveQuery $query)
     {
+        $user = User::findIdentity(Yii::$app->user->id);
+
+        // Пользователям показываем только те заявки, которые были созданы ими
+        if ($user->role === UserRoleEnum::User->value) {
+            $query->andFilterWhere([
+                't.created_by' => $user->id,
+            ]);
+        }
+
+        // Менеджерам показываем только те заявки, в которых они значатся
+        if ($user->role === UserRoleEnum::Manager->value) {
+            $query->andFilterWhere([
+                't.manager_id' => $user->id,
+            ]);
+        }
+
         $query->andFilterWhere([
             't.id' => $this->id,
-            't.manager_id' => $this->manager_id,
             't.status' => $this->status,
         ]);
 

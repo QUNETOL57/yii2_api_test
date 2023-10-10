@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use backend\enums\RequestStatusEnum;
+use backend\services\MailService;
 use common\models\User;
 use Swagger\Annotations as SWG;
 use yii\behaviors\AttributeBehavior;
@@ -77,6 +78,7 @@ class Request extends \yii\db\ActiveRecord
                     $newValue = $this->status;
                     if ($this->status == RequestStatusEnum::InWork->value && $this->comment != null) {
                         $this->status = RequestStatusEnum::Resolved->value;
+                        $this->sendRequestMail();
                     }
                     return $this->comment;
                 },
@@ -108,7 +110,7 @@ class Request extends \yii\db\ActiveRecord
             [['description', 'manager_id', 'status'], 'required'],
             [['description', 'comment'], 'string'],
             [['manager_id', 'status', 'id'], 'integer'],
-            [['created_at', 'updated_at'], 'safe'],
+            [['created_at', 'updated_at', 'created_by', 'updated_by'], 'safe'],
             [['manager_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['manager_id' => 'id']],
         ];
     }
@@ -147,5 +149,15 @@ class Request extends \yii\db\ActiveRecord
     public function getHistory(): ActiveQuery
     {
         return $this->hasMany(RequestHistory::class, ['request_id' => 'id']);
+    }
+
+    /**
+     * Отправка письма создателю
+     * @return void
+     */
+    public function sendRequestMail(): void
+    {
+        $user = User::findIdentity($this->created_by);
+        MailService::sendMail($user->email, $this->id, $this->comment);
     }
 }
