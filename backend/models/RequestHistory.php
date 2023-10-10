@@ -3,7 +3,6 @@
 namespace backend\models;
 
 use common\models\User;
-use Yii;
 use yii\db\ActiveQuery;
 
 /**
@@ -76,5 +75,20 @@ class RequestHistory extends \yii\db\ActiveRecord
     public function getRequest(): ActiveQuery
     {
         return $this->hasOne(Request::class, ['id' => 'request_id']);
+    }
+
+    /**
+     * @param int $request_id
+     * @param int $old_status
+     * @param int $new_status
+     * @return void
+     */
+    public static function saveHistory(int $request_id, int $old_status, int $new_status): void
+    {
+        $model = new self;
+        $model->request_id = $request_id;
+        $model->old_status = $old_status;
+        $model->new_status = $new_status;
+        $model->save();
     }
 }

@@ -2,12 +2,28 @@
 
 namespace backend\models;
 
+use backend\enums\RequestStatusEnum;
 use common\models\User;
-use Yii;
+use Swagger\Annotations as SWG;
+use yii\behaviors\AttributeBehavior;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "request".
+ *
+ * @SWG\Definition(
+ *     definition="Request",
+ *     type="object",
+ * )
+ * @SWG\Property(property="id", type="integer", description="ID заявки"),
+ * @SWG\Property(property="description", type="string", description="Описание заявки"),
+ * @SWG\Property(property="manager_id", type="integer", description="ИД менеджера"),
+ * @SWG\Property(property="status", type="integer", description="Статус заявки"),
+ * @SWG\Property(property="comment", type="string", description="Комментарий"),
+ * @SWG\Property(property="created_at", type="string", format="date-time", description="Дата создания заявки"),
+ * @SWG\Property(property="updated_at", type="string", format="date-time", description="Дата изменения заявки")
  *
  * @property int $id
  * @property string $description Описание заявки
@@ -18,7 +34,7 @@ use yii\db\ActiveQuery;
  * @property string|null $updated_at Дата изменения
  *
  * @property User $manager
- * @property RequestHistory[] $requestHistories
+ * @property RequestHistory[] $history
  */
 class Request extends \yii\db\ActiveRecord
 {
@@ -31,6 +47,51 @@ class Request extends \yii\db\ActiveRecord
     }
 
     /**
+     * @return array
+     */
+    public function behaviors(): array
+    {
+        return ArrayHelper::merge(parent::behaviors(), [
+            [
+                'class' => TimestampBehavior::class,
+                'value' => function () {
+                    return date('Y-m-d H:i:s');
+                },
+            ],
+            [
+                /** Смена статуса заявки если заявка была в работе у нее был написан комментарий  */
+                'class' => AttributeBehavior::class,
+                'attributes' => [
+                    self::EVENT_BEFORE_UPDATE => 'comment',
+                ],
+                'value' => function ($event) {
+                    $oldValue = $this->getOldAttribute('status');
+                    $newValue = $this->status;
+                    if ($this->status == RequestStatusEnum::InWork->value && $this->comment != null) {
+                        $this->status = RequestStatusEnum::Resolved->value;
+                    }
+                    return $this->comment;
+                },
+            ],
+            [
+                /** Отражение изменения статуса в историю */
+                'class' => AttributeBehavior::class,
+                'attributes' => [
+                    self::EVENT_BEFORE_UPDATE => 'status',
+                ],
+                'value' => function ($event) {
+                    $oldValue = $this->getOldAttribute('status');
+                    $newValue = $this->status;
+                    if ($oldValue != $newValue) {
+                        RequestHistory::saveHistory($this->id, $oldValue, $newValue);
+                    }
+                    return $this->status;
+                },
+            ],
+        ]);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function rules(): array
@@ -38,7 +99,7 @@ class Request extends \yii\db\ActiveRecord
         return [
             [['description', 'manager_id', 'status'], 'required'],
             [['description', 'comment'], 'string'],
-            [['manager_id', 'status'], 'integer'],
+            [['manager_id', 'status', 'id'], 'integer'],
             [['created_at', 'updated_at'], 'safe'],
             [['manager_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['manager_id' => 'id']],
         ];
@@ -75,7 +136,7 @@ class Request extends \yii\db\ActiveRecord
      *
      * @return ActiveQuery
      */
-    public function getRequestHistories(): ActiveQuery
+    public function getHistory(): ActiveQuery
     {
         return $this->hasMany(RequestHistory::class, ['request_id' => 'id']);
     }

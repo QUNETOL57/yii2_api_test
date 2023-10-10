@@ -29,6 +29,7 @@ class SwaggerController extends Controller
                 // The list of directories that contains the swagger annotations.
                 'scanDir' => [
                     Yii::getAlias('@app/controllers'),
+                    Yii::getAlias('@app/models'),
                 ],
             ],
             'error' => [
