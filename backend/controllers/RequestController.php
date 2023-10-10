@@ -28,7 +28,6 @@ class RequestController extends ActiveController
         return $actions;
     }
 
-
     /**
      * @SWG\Get(
      *     path="/requests",
@@ -40,6 +39,7 @@ class RequestController extends ActiveController
      *     @SWG\Parameter(name="description", in="query", type="string", required=false, format="textarea", description="Описание заявки"),
      *     @SWG\Parameter(name="status", in="query", type="integer", enum={0,1,2}, required=false, description="Статус заявки"),
      *     @SWG\Parameter(name="comment", in="query", type="string", format="textarea", required=false, description="Комментарий заявки"),
+     *     @SWG\Parameter(name="sort", in="query", type="string", required=false, description="Поле для сортировки"),
      *     @SWG\Response(
      *         response=200,
      *         description="Successful operation",
@@ -53,12 +53,9 @@ class RequestController extends ActiveController
      */
     public function actionIndex()
     {
-        $requestParams =  Yii::$app->getRequest()->getQueryParams();
-
-        $model = (new RequestSearch())->search($requestParams);
-        return $model;
+        $requestParams = Yii::$app->getRequest()->getQueryParams();
+        return (new RequestSearch())->search($requestParams);
     }
-
 
     /**
      * @SWG\Post(
@@ -108,7 +105,6 @@ class RequestController extends ActiveController
         return parent::actionUpdate();
     }
 
-
     /**
      * @SWG\Delete(
      *     path="/requests/{id}",
@@ -116,13 +112,7 @@ class RequestController extends ActiveController
      *     tags={"Заявки"},
      *     description="Удаляет заявку по id",
      *     produces={"application/json"},
-     *     @SWG\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="id заявки",
-     *         required=true,
-     *         type="integer"
-     *     ),
+     *     @SWG\Parameter(name="id", in="path", description="id заявки", required=true, type="integer"),
      *     @SWG\Response(
      *         response=204,
      *         description="Успешное удаление"
@@ -137,5 +127,4 @@ class RequestController extends ActiveController
     {
         return parent::actionDelete();
     }
-
 }

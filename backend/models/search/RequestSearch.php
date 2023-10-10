@@ -75,13 +75,13 @@ class RequestSearch extends Request
     {
         $dataProvider->setSort([
             'attributes' => [
-                't.id',
-                't.created_at',
-                't.updated_at',
-                't.status',
+                'id',
+                'created_at',
+                'updated_at',
+                'status',
             ],
             'defaultOrder' => [
-                't.id' => SORT_DESC,
+                'id' => SORT_DESC,
             ],
         ]);
 
