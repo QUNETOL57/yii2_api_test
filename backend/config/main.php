@@ -21,9 +21,6 @@ return [
                 'application/json' => JsonParser::class,
             ]
         ],
-//        'response' => [
-//            'format' => \yii\web\Response::FORMAT_JSON
-//        ],
         'user' => [
             'identityClass' => 'common\models\User',
             'enableAutoLogin' => true,

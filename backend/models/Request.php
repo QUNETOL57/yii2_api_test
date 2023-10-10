@@ -6,6 +6,7 @@ use backend\enums\RequestStatusEnum;
 use common\models\User;
 use Swagger\Annotations as SWG;
 use yii\behaviors\AttributeBehavior;
+use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
@@ -24,6 +25,8 @@ use yii\helpers\ArrayHelper;
  * @SWG\Property(property="comment", type="string", description="Комментарий"),
  * @SWG\Property(property="created_at", type="string", format="date-time", description="Дата создания заявки"),
  * @SWG\Property(property="updated_at", type="string", format="date-time", description="Дата изменения заявки")
+ * @SWG\Property(property="created_by", type="integer", description="Кто создал")
+ * @SWG\Property(property="updated_by", type="integer", description="Кто обновил")
  *
  * @property int $id
  * @property string $description Описание заявки
@@ -32,6 +35,8 @@ use yii\helpers\ArrayHelper;
  * @property string|null $comment Комментарий
  * @property string|null $created_at Дата создания
  * @property string|null $updated_at Дата изменения
+ * @property int $created_by [int]  Кто создал
+ * @property int $updated_by [int]  Кто обновил
  *
  * @property User $manager
  * @property RequestHistory[] $history
@@ -57,6 +62,9 @@ class Request extends \yii\db\ActiveRecord
                 'value' => function () {
                     return date('Y-m-d H:i:s');
                 },
+            ],
+            [
+                'class' => BlameableBehavior::class
             ],
             [
                 /** Смена статуса заявки если заявка была в работе у нее был написан комментарий  */
