@@ -6,6 +6,8 @@ use backend\models\Request;
 use backend\models\search\RequestSearch;
 use Swagger\Annotations as SWG;
 use Yii;
+use yii\filters\auth\HttpBearerAuth;
+use yii\helpers\ArrayHelper;
 use yii\rest\ActiveController;
 
 
@@ -16,6 +18,14 @@ class RequestController extends ActiveController
     ];
 
     public $modelClass = Request::class;
+
+    public function behaviors()
+    {
+        $behavior['authenticator'] = [
+            'class' => HttpBearerAuth::class
+        ];
+        return ArrayHelper::merge(parent::behaviors(), $behavior);
+    }
 
     /**
      * @inheritdoc
@@ -29,13 +39,20 @@ class RequestController extends ActiveController
     }
 
     /**
+     * @SWG\SecurityScheme(
+     *      securityDefinition="Bearer",
+     *      type="apiKey",
+     *      name="Authorization",
+     *      in="header",
+     *      description="Bearer {token}"
+     *  )
      * @SWG\Get(
+     *     security={{"Bearer":{}}},
      *     path="/requests",
      *     summary="Получение заявок с фильтрацией",
      *     tags={"Заявки"},
      *     description="Возвращает список заявок с историей",
      *     @SWG\Parameter(name="id", in="query", description="id заявки", required=false, type="integer"),
-     *     @SWG\Parameter(name="manager_id", in="query", type="integer", required=false, description="ИД менеджера"),
      *     @SWG\Parameter(name="description", in="query", type="string", required=false, format="textarea", description="Описание заявки"),
      *     @SWG\Parameter(name="status", in="query", type="integer", enum={0,1,2}, required=false, description="Статус заявки"),
      *     @SWG\Parameter(name="comment", in="query", type="string", format="textarea", required=false, description="Комментарий заявки"),
@@ -59,6 +76,7 @@ class RequestController extends ActiveController
 
     /**
      * @SWG\Post(
+     *     security={{"Bearer":{}}},
      *     path="/requests",
      *     summary="Создание заявки",
      *     tags={"Заявки"},
@@ -79,6 +97,7 @@ class RequestController extends ActiveController
 
     /**
      * @SWG\Put(
+     *     security={{"Bearer":{}}},
      *     path="/requests/{id}",
      *     summary="Обновление заявки",
      *     tags={"Заявки"},
@@ -107,6 +126,7 @@ class RequestController extends ActiveController
 
     /**
      * @SWG\Delete(
+     *     security={{"Bearer":{}}},
      *     path="/requests/{id}",
      *     summary="Удаление заявки",
      *     tags={"Заявки"},

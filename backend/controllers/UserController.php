@@ -6,8 +6,8 @@ use common\models\User;
 use Swagger\Annotations as SWG;
 use Yii;
 use yii\filters\auth\HttpBasicAuth;
+use yii\helpers\ArrayHelper;
 use yii\rest\ActiveController;
-use yii\web\UnauthorizedHttpException;
 
 class UserController extends ActiveController
 {
@@ -15,16 +15,14 @@ class UserController extends ActiveController
 
     public function behaviors()
     {
-        $behaviors = parent::behaviors();
-        $behaviors['authenticator'] = [
+        $behavior['authenticator'] = [
             'class' => HttpBasicAuth::class,
             'auth' => function ($username, $password) {
                 return User::findByUsernameAndPassword($username, $password);
             }
         ];
-        return $behaviors;
+        return ArrayHelper::merge(parent::behaviors(), $behavior);
     }
-
 
     /**
      * @SWG\SecurityScheme(
@@ -36,7 +34,7 @@ class UserController extends ActiveController
      *     path="/user/login",
      *     summary="Получение токена",
      *     tags={"Пользователи"},
-     *     description="Возвращает список заявок с историей",
+     *     description="Возвращает токен пользователя для Bearer авторизации",
      *
      *     @SWG\Response(
      *         response=200,
@@ -47,7 +45,6 @@ class UserController extends ActiveController
      *         description="Request not found"
      *     )
      * )
-     * @throws UnauthorizedHttpException
      */
     public function actionLogin()
     {
