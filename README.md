@@ -41,11 +41,12 @@
     php-init
     composer install
     ```
-6. Запуск миграций
+6. Необходимо заменить файл ```common/config/main-local.php``` на ```common/config/main-local-template.php```
+7. Запуск миграций
    ```
     ./yii migrate
     ```
-7. Запуск скрипта для создания пользователей
+8. Запуск скрипта для создания пользователей
    ```
     ./yii start/create-users
     ```
